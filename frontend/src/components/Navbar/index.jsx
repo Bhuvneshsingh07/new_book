@@ -38,11 +38,11 @@ const Navbar = () => {
                      <i class="fa-solid fa-user"></i>{user.name}
                   </button>
                   <ul class="dropdown-menu">
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        Bookings
-                      </a>
-                    </li>
+                  <li>
+                   <a href="/profile">
+                   Profile
+                   </a>
+                   </li>
                     <li>
                       <a class="dropdown-item" href="#" onClick={logout}>
                         Logout

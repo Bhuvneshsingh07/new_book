@@ -65,4 +65,30 @@ router.post("/bookroom", async (req, res) => {
   }
 });
 
+router.post("/getuserbookings", async (req, res) => {
+  const { userid } = req.body;
+  console.log("Fetching bookings for User ID:", userid); // Debugging log
+
+  try {
+    const bookings = await Booking.find({ userid: userid });
+    res.json(bookings);
+  } catch (error) {
+    console.error("Error fetching user bookings:", error);
+    return res.status(400).json({ error: "Error fetching user bookings" });
+  }
+});
+
+// Get all bookings (For Admin Panel)
+router.get("/getallbookings", async (req, res) => {
+  try {
+    const bookings = await Booking.find();
+    res.json(bookings);
+  } catch (error) {
+    console.error("Error fetching all bookings:", error);
+    return res.status(400).json({ error: "Error fetching bookings" });
+  }
+});
+
+
 module.exports = router;
+

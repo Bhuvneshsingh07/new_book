@@ -4,7 +4,8 @@ import Room from "../components/Room/Room";
 import Loader from "../components/Loader";
 import Error from "../components/Error";
 import moment from "moment";
-import { DatePicker } from 'antd';
+import { DatePicker } from "antd";
+
 const { RangePicker } = DatePicker;
 
 const Homescreen = () => {
@@ -14,6 +15,7 @@ const Homescreen = () => {
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [duplicateRooms, setDuplicateRooms] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // New search state
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,56 +35,79 @@ const Homescreen = () => {
     };
 
     fetchData();
-  }, []); // Empty dependency array ensures useEffect runs only once
+  }, []);
 
   const filterByDate = (dates) => {
-    const startDate = dates && dates[0] ? dates[0].format('DD-MM-YYYY') : null;
-    const endDate = dates && dates[1] ? dates[1].format('DD-MM-YYYY') : null;
+    const startDate = dates && dates[0] ? dates[0].format("DD-MM-YYYY") : null;
+    const endDate = dates && dates[1] ? dates[1].format("DD-MM-YYYY") : null;
 
     if (!startDate || !endDate) {
-      // If either start or end date is not selected, reset rooms to all duplicateRooms
       setRooms([...duplicateRooms]);
       return;
     }
 
-    const filteredRooms = duplicateRooms.filter(room => {
-      // Check if the room has any bookings during the selected date range
-      const hasBookings = room.currentbookings.some(booking => {
-        const bookingStartDate = moment(booking.fromdate, 'DD-MM-YYYY');
-        const bookingEndDate = moment(booking.todate, 'DD-MM-YYYY');
+    const filteredRooms = duplicateRooms.filter((room) => {
+      const hasBookings = room.currentbookings.some((booking) => {
+        const bookingStartDate = moment(booking.fromdate, "DD-MM-YYYY");
+        const bookingEndDate = moment(booking.todate, "DD-MM-YYYY");
 
         return (
-          (moment(startDate, 'DD-MM-YYYY').isBetween(bookingStartDate, bookingEndDate, undefined, '[]') ||
-          moment(endDate, 'DD-MM-YYYY').isBetween(bookingStartDate, bookingEndDate, undefined, '[]')) ||
-          (moment(startDate, 'DD-MM-YYYY').isSame(bookingStartDate, 'day') ||
-          moment(endDate, 'DD-MM-YYYY').isSame(bookingEndDate, 'day'))
+          (moment(startDate, "DD-MM-YYYY").isBetween(bookingStartDate, bookingEndDate, undefined, "[]") ||
+            moment(endDate, "DD-MM-YYYY").isBetween(bookingStartDate, bookingEndDate, undefined, "[]")) ||
+          moment(startDate, "DD-MM-YYYY").isSame(bookingStartDate, "day") ||
+          moment(endDate, "DD-MM-YYYY").isSame(bookingEndDate, "day")
         );
       });
 
-      // Return rooms that do not have any bookings during the selected date range
       return !hasBookings;
     });
 
     setRooms(filteredRooms);
-    setFromDate(startDate); // Update from date state
-    setToDate(endDate); // Update to date state
+    setFromDate(startDate);
+    setToDate(endDate);
+  };
+
+  // Filter by search query
+  const filterBySearch = (query) => {
+    setSearchQuery(query);
+    if (!query) {
+      setRooms([...duplicateRooms]);
+      return;
+    }
+
+    const filteredRooms = duplicateRooms.filter((room) =>
+      room.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+    setRooms(filteredRooms);
   };
 
   return (
     <div className="container">
-      <div className="row mt-5">
+      {/* Search & Date Filter */}
+      <div className="row mt-5 d-flex align-items-center">
         <div className="col-md-3">
-          <RangePicker format='DD-MM-YYYY' onChange={filterByDate}/>
+          <RangePicker format="DD-MM-YYYY" onChange={filterByDate} className="form-control" />
+        </div>
+        <div className="col-md-4">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search by room name..."
+            value={searchQuery}
+            onChange={(e) => filterBySearch(e.target.value)}
+          />
         </div>
       </div>
-      
+
+      {/* Room Listings */}
       <div className="row justify-content-center mt-5">
         {loading ? (
           <Loader />
         ) : rooms.length > 0 ? (
           rooms.map((room, index) => (
             <div className="col-md-9 mt-2" key={index}>
-              <Room room={room} fromdate={fromDate} todate={toDate}/>
+              <Room room={room} fromdate={fromDate} todate={toDate} />
             </div>
           ))
         ) : (

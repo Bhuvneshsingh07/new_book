@@ -35,4 +35,14 @@ router.post("/login", async (req, res) => {
     }
 });
 
+// Get all users
+router.get('/getallusers', async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.send(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching users', error });
+    }
+});
+
 module.exports = router;
